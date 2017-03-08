@@ -3,39 +3,32 @@ const coordinates = {
 	uk: '51.1,-6.9,58.1,1.3',
 	europe: '38.0,-28.0,71.0,47.0',
 };
-const apiQuery = `//api.waqi.info/map/bounds/?latlng=${coordinates.uk}&token=${apiToken}`;
+const apiQuery = `//api.waqi.info/map/bounds/?latlng=${coordinates.europe}&token=${apiToken}`;
 const placesArray = [];
+let aqiHighest = 0;
 
 const getApiData = $.getJSON(apiQuery, (result) => {
 	const data = result.data;
 	data.map((aqiData) => {
+		const aqiValue = parseInt(aqiData.aqi, 10);
 		placesArray.push({
 			lat: aqiData.lat,
 			lon: aqiData.lon,
-			aqi: parseInt(aqiData.aqi, 10),
+			aqi: aqiValue,
 		});
+		if (aqiValue > aqiHighest && aqiValue !== 999) {
+			aqiHighest = aqiValue;
+		}
 		return placesArray;
 	});
 });
 
-function getHighestAQIValue() {
-	let highestAQIValue = 0;
-	placesArray.map((aqiData) => {
-		const currentAQIValue = aqiData.aqi;
-		if (currentAQIValue > highestAQIValue) {
-			highestAQIValue = currentAQIValue;
-		}
-		return true;
-	});
-	return highestAQIValue;
-}
-
 function setCircleOpacity(AQIValue) {
-	return parseInt(AQIValue, 10) / getHighestAQIValue();
+	return AQIValue / 250 <= 0.9 ? AQIValue / 250 : 0.95;
 }
 
-function setGradient(aqi) {
-	const greenBlue = Math.floor(256 - ((aqi / getHighestAQIValue()) * 256));
+function setGradient(AQIValue) {
+	const greenBlue = Math.floor(256 - ((AQIValue / aqiHighest > 700 ? 700 : aqiHighest) * 256));
 	return `rgb(256, ${greenBlue}, ${greenBlue})`;
 }
 
@@ -51,7 +44,6 @@ function drawDataCircles(map) {
 					fillOpacity: setCircleOpacity(aqiData.aqi),
 					map,
 					radius: 20000,
-					label: aqiData.aqi.toString(),
 				});
 				return circle;
 			}
