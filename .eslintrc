@@ -1,7 +1,14 @@
 {
   "extends": "airbnb",
-    "rules": {
-      "indent": ["error", "tab"],
-      "no-tabs": 0
-    }
+  "rules": {
+    "indent": ["error", "tab"],
+    "no-tabs": 0
+  },
+  "env": {
+    "browser": true,
+    "jquery": true
+  },
+  "globals": {
+    "google": true
+  }
 }
